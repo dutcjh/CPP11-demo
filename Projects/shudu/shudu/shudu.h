@@ -10,40 +10,185 @@ const unsigned nnt = 9;
 
 class Suduko
 {
-private:
+public:
 	unsigned sudu[cnt][rnt] = {};
+private:
 	unsigned quyu[qnt][nnt] = {};
 	unsigned prob[cnt][rnt] = {};
 	unsigned judge(const unsigned c, const unsigned r);
 	unsigned qukuai(const unsigned c, const unsigned r);
-public:
-	Suduko(fstream &fin); // 构造函数
-	void sudu_read(fstream &fin);// 读取sudu矩阵
 	void prob_updates(); // 可能性矩阵更新函数
+public:
+	Suduko(){}           // 构造函数1
+	Suduko(fstream &fin); // 构造函数
+	Suduko(const unsigned arr[cnt][rnt]);	//构造函数2
+	void sudu_read(fstream &fin);// 读取sudu矩阵
 	void display_sudu(); // 显示数独矩阵函数
 	void display_prob(); // 显示可能性矩阵函数
 	void log_updates(ofstream &out);// 更新log文件函数
 	void sudu_updates();  // 求解一次
 	void sudu_save(ofstream &out); // 保存计算结果
-	bool is_over(); // 判断是否结束
+	int is_over(int pflag); // 判断是否结束
+	void quyu_update();  // 更新quyu
+	//void generator(Suduko &item, unsigned &c, unsigned &r, unsigned &num1, unsigned &num2); // 产生一次尝试
+	Suduko operator=(const Suduko &items); // 重构等于号 =
 };
 
-// 构造函数
+// 构造函数1
 Suduko::Suduko(fstream &fin) 
 {
 	sudu_read(fin);
 	if (fin.is_open())
 		fin.close();
 }
-
-// 判断是否结束
-inline bool Suduko::is_over()
+//构造函数2
+Suduko::Suduko(const unsigned arr[cnt][rnt])
 {
 	for (int i = 0; i < cnt; ++i)
 		for (int j = 0; j < rnt; ++j)
+		{
+			sudu[i][j] = arr[i][j]; 
+			quyu[(i / 3) * 3 + j / 3][(i % 3) * 3 + j % 3] = sudu[i][j];
+		}
+}
+
+inline void Suduko::quyu_update()
+{
+	for (int i = 0; i < cnt; ++i)
+		for (int j = 0; j < rnt; ++j)
+		{
+			quyu[(i / 3) * 3 + j / 3][(i % 3) * 3 + j % 3] = sudu[i][j];
+		}
+}
+
+// 产生一次尝试
+/*inline void Suduko::generator(Suduko &item, unsigned &c, unsigned &r, unsigned &num1, unsigned &num2)
+{
+	item = *this;
+	unsigned count = 0;
+	for (unsigned i = 0; i < cnt; ++i)
+		for (unsigned j = 0; j < cnt; ++j)
+		{
+			count = 0;
 			if (!sudu[i][j])
+			{
+				for (unsigned k = 0; k < cnt; ++k)
+				{
+					if ((prob[i][j] >> k) & 0x1)
+					{
+						++count;
+					}
+				}
+				if (count == 2)
+				{
+					unsigned arr[2] = {};
+					for (unsigned n = 0, k = 0; k < cnt; ++k)
+					{
+						if ((prob[i][j] >> k) & 0x1)
+						{
+							arr[n] = k + 1;
+							++n;
+						}
+					}
+					c = i;
+					r = j;
+					num1 = arr[0];
+					num2 = arr[1];
+					return;
+				}
+			}
+		}
+}*/
+
+// 重构等于号 =
+Suduko Suduko::operator=(const Suduko &items)
+{
+	Suduko items1(items.sudu);
+	return items1;
+}
+
+bool operator==(const Suduko &items1, const Suduko &items2)
+{
+	for (unsigned i = 0; i < cnt; ++i)
+		for (unsigned j = 0; j < rnt; ++j)
+			if (items1.sudu[i][j] != items1.sudu[i][j])
 				return false;
 	return true;
+}
+
+bool operator!=(const Suduko &items1, const Suduko &items2)
+{
+	if (items1 == items2)
+		return false;
+	else
+		return true;
+}
+
+ostream &operator<<(ostream &os, const Suduko &item)
+{
+	os << "-------------------------------------" << endl;
+	for (int i = 0; i < cnt; ++i)
+	{
+		for (int j = 0; j < rnt; ++j)
+		{
+			if (item.sudu[i][j] == 0)
+				os << "| " << " " << " ";
+			else
+				os << "| " << item.sudu[i][j] << " ";
+		}
+		os << "|" << endl;
+		os << "-------------------------------------" << endl;
+	}
+	return os;
+}
+
+// 判断是否结束
+inline int Suduko::is_over(int pflag)
+{
+	int flag = 0, num = 0;
+	unsigned temp = 0;
+	for (int i = 0; i < cnt; ++i)
+	{
+		for (int j = 0; j < rnt; ++j)
+		{
+			if (!sudu[i][j])  // 没有填的
+				++num;
+			else // 填了的空是否有冲突
+			{
+				for (unsigned k = 0; k < rnt; ++k)
+				{ // 列冲突
+					if (k == i)
+						continue;
+					if (sudu[k][j] == sudu[i][j])
+						temp = 1;
+				}
+				for (unsigned k = 0; k < rnt; ++k)
+				{ // 行冲突
+					if (k == j)
+						continue;
+					if (sudu[i][k] == sudu[i][j])
+						temp = 2;
+				}
+			}
+		}
+	}
+	if (temp) // 有填错了的
+	{
+		flag = -1;
+	}
+	else // 没有填错了的
+	{
+		if (num == 0) //填满了且没有错误
+			flag = 0;
+		else   // 没有填满
+		{
+			if (num == pflag) // 且没有进展，原地踏步
+				flag = -2;
+			else
+				flag = num;
+		}
+	}
+	return flag;
 }
 
 // 读取sudu矩阵
@@ -62,8 +207,9 @@ inline void Suduko::sudu_read(fstream &fin)
 // 求解一次
 inline void Suduko::sudu_updates()
 {
+	prob_updates();
 	for (unsigned i = 0; i < cnt; ++i)
-		for (unsigned j = 0; j < cnt; ++j)
+		for (unsigned j = 0; j < rnt; ++j)
 		{
 			sudu[i][j] = judge(i, j);
 			quyu[(i / 3) * 3 + j / 3][(i % 3) * 3 + j % 3] = sudu[i][j];
