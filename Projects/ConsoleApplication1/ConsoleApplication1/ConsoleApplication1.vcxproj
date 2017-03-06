@@ -19,7 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="POJ1009.cpp" />
+    <ClCompile Include="POJ1061.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{EDB5BEB7-6646-4E6D-956F-EEF0F5A61A7B}</ProjectGuid>
