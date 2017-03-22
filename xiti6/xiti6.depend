@@ -1,0 +1,12 @@
+# depslib dependency file v1.0
+1490158083 source:d:\dutch\documents\cppfile\xiti6\timeinfo.cpp
+	<iostream>
+	<iomanip>
+	"Timeinfo.h"
+
+1490158075 d:\dutch\documents\cppfile\xiti6\timeinfo.h
+
+1490158035 source:d:\dutch\documents\cppfile\xiti6\xiti6_1.cpp
+	<iostream>
+	"Timeinfo.h"
+
