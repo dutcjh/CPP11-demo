@@ -1,6 +1,7 @@
 #include<iostream>
 #include<iterator>
 #include<list>
+#include<algorithm>
 using namespace std;
 
 int main()
@@ -9,8 +10,9 @@ int main()
     list<int> lst(in, eof);
 
     ostream_iterator<int> out(cout, " ");
-    for (auto e:lst) *out++ = e; //µÈ¼¶ÓÚ*out = e;
+    copy(lst.begin(), lst.end(), out);
     cout << endl;
+
     return 0;
 }
 
