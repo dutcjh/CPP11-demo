@@ -1,0 +1,10 @@
+exekill.bat
+*.db
+*.sln
+*.log
+*.filters
+*.vcxproj
+Debug/
+.vs/
+*.exe
+*.o
